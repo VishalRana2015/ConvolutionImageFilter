@@ -1,15 +1,13 @@
-import com.sun.xml.internal.fastinfoset.algorithm.HexadecimalEncodingAlgorithm;
-import com.sun.xml.internal.ws.api.streaming.XMLStreamReaderFactory;
-
 import javax.swing.*;
-import javax.swing.border.Border;
 import javax.swing.text.*;
 import java.awt.*;
-import java.awt.image.*;
-import java.math.RoundingMode;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.text.DecimalFormat;
-import java.text.NumberFormat;
-import java.text.ParseException;
+import java.util.HashMap;
+import java.util.Iterator;
 
 public class ConvolutionMain extends JFrame {
 
@@ -18,47 +16,14 @@ public class ConvolutionMain extends JFrame {
     private JButton submitButton;
     private JButton resetButton;
     private JButton loadImageButton;
-    private JComboBox<String> convolutionMatrixSelector;
+    private JComboBox<String> convolutionComboBox;
+    private int identityMatrixIndex = -1;
     private int VERTICAL_STRUT_HEIGHT = 5;
-    private int MATRIX_SiZE = 3;
+    private int MATRIX_SIZE = 3;
     private int MATRIX_CELL_SPACING_WIDTH = 3;
-
-    private static JPanel formatterPanel() throws ParseException {
-        JPanel panel = new JPanel();
-        DecimalFormat decimalFormat = new DecimalFormat();
-        decimalFormat.setMaximumFractionDigits(6);
-        decimalFormat.setGroupingUsed(false);
-        decimalFormat.setMinimumFractionDigits(1);
-        NumberFormatter numberFormatter = new NumberFormatter(decimalFormat);
-        numberFormatter.setAllowsInvalid(false);
-        numberFormatter.setValueClass(Double.class);
-        DefaultFormatterFactory defaultFormatterFactory = new DefaultFormatterFactory(numberFormatter);
-
-        JFormattedTextField formattedTextField = new JFormattedTextField(defaultFormatterFactory);
-        formattedTextField.setColumns(20);
-        panel.add(formattedTextField);
-        JFormattedTextField field2 = new JFormattedTextField();
-        field2.setColumns(20);
-        panel.add(field2);
-
-        JFormattedTextField textField1 = new JFormattedTextField(new Float(10.01));
-        textField1.setFormatterFactory(new JFormattedTextField.AbstractFormatterFactory() {
-
-            @Override
-            public JFormattedTextField.AbstractFormatter getFormatter(JFormattedTextField tf) {
-                NumberFormat format = DecimalFormat.getInstance();
-                format.setMinimumFractionDigits(2);
-                format.setMaximumFractionDigits(2);
-                format.setRoundingMode(RoundingMode.HALF_UP);
-                InternationalFormatter formatter = new InternationalFormatter(format);
-                formatter.setAllowsInvalid(false);
-                return formatter;
-            }
-        });
-        textField1.setColumns(20);
-        panel.add(textField1);
-        return panel;
-    }
+    private JPanel convolutionMatrixPanel ;
+    private JFormattedTextField[][] formattedTextFields;
+    private JPanel matrixPanel;
 
     public static void main(String[] args) {
         ConvolutionMain frame= new ConvolutionMain();
@@ -85,6 +50,7 @@ public class ConvolutionMain extends JFrame {
         JPanel menuPanel = frame.createMenuPanel();
         panel.add(menuPanel, constraints);
         frame.setContentPane(panel);
+        frame.addActions();
         frame.setVisible(true);
     }
 
@@ -103,13 +69,25 @@ public class ConvolutionMain extends JFrame {
         constraints.gridx = 0;
         constraints.gridy = 0;
         convolutionPanel.add(convolutionMatrixDropDownLabel, constraints);
-        convolutionMatrixSelector = new JComboBox<>();
-        convolutionMatrixSelector.addItem("Blur");
-        convolutionMatrixSelector.addItem("Sharp");
-        convolutionMatrixSelector.addItem("Edge");
+        convolutionComboBox = new JComboBox<>();
+        Iterator<String> iterator = ConvolutionImageFilter.getConvolutionMatricesMap().keySet().iterator();
+        int index = 0;
+        while ( iterator.hasNext()){
+            String key = iterator.next();
+            convolutionComboBox.addItem(key);
+            if ( key.equals("Identity")){
+                identityMatrixIndex = index;
+            }
+            index++;
+        }
+        System.out.println(identityMatrixIndex);
+        if ( identityMatrixIndex != -1){
+            convolutionComboBox.setSelectedIndex(identityMatrixIndex);
+        }
+
 
         constraints.gridx = 1;
-        convolutionPanel.add(convolutionMatrixSelector, constraints);
+        convolutionPanel.add(convolutionComboBox, constraints);
         convolutionPanel.setPreferredSize(new Dimension(300, 50));
         convolutionPanel.setMinimumSize(new Dimension(300, 50));
         convolutionPanel.setMaximumSize(new Dimension(300, 50));
@@ -122,7 +100,7 @@ public class ConvolutionMain extends JFrame {
         menuPanel.add(Box.createVerticalStrut(VERTICAL_STRUT_HEIGHT));
 
         // -----------------------------------------------------------
-        JPanel matrixPanel = matrixPanel();
+        matrixPanel = matrixPanel();
         menuPanel.add(matrixPanel);
         matrixPanel.add(Box.createVerticalStrut(STRUCT_HEIGHT));
         menuPanel.add(getSeparator());
@@ -148,10 +126,9 @@ public class ConvolutionMain extends JFrame {
         JPanel convolutionMatrixPanel = new JPanel();
         convolutionMatrixPanel.setLayout(new GridBagLayout());
         GridBagConstraints constraints = new GridBagConstraints();
-        rows = cols = MATRIX_SiZE;
-        JFormattedTextField[][] formattedTextFields = new JFormattedTextField[rows][cols];
+        formattedTextFields = new JFormattedTextField[rows][cols];
         DecimalFormat decimalFormat = new DecimalFormat();
-        decimalFormat.setMaximumFractionDigits(2);
+        decimalFormat.setMaximumFractionDigits(6);
         decimalFormat.setMinimumFractionDigits(1);
         decimalFormat.setGroupingUsed(false); // disabling group (e.g thousands)
         NumberFormatter numberFormatter = new NumberFormatter(decimalFormat);
@@ -161,7 +138,7 @@ public class ConvolutionMain extends JFrame {
             convolutionMatrixPanel.add(Box.createHorizontalStrut(5));
             for (int j = 0; j < cols; j++) {
                 formattedTextFields[i][j] = new JFormattedTextField(defaultFormatterFactory);
-                formattedTextFields[i][j].setColumns(10);
+                formattedTextFields[i][j].setColumns(4);
                 constraints.gridx = 2 * j;
                 formattedTextFields[i][j].setMinimumSize(formattedTextFields[i][j].getPreferredSize());
                 formattedTextFields[i][j].setMaximumSize(formattedTextFields[i][j].getPreferredSize());
@@ -184,7 +161,7 @@ public class ConvolutionMain extends JFrame {
         matrixLabel.setAlignmentX(JComponent.CENTER_ALIGNMENT);
         matrixPanel.add(matrixLabel);
         matrixPanel.add(Box.createVerticalStrut(STRUCT_HEIGHT));
-        JPanel convolutionMatrixPanel = convolutionMatrixPanel(3, 3);
+        convolutionMatrixPanel = convolutionMatrixPanel(MATRIX_SIZE, MATRIX_SIZE);
         matrixPanel.add(convolutionMatrixPanel);
         matrixPanel.add(Box.createVerticalStrut(STRUCT_HEIGHT));
         matrixPanel.setPreferredSize(new Dimension(300, 300));
@@ -220,4 +197,32 @@ public class ConvolutionMain extends JFrame {
         buttonPanel.add(saveImageButton, constraints);
         return buttonPanel;
     }
+
+    private void addActions(){
+        convolutionComboBox.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                HashMap<String, Double[][]> convolutionMatrices = ConvolutionImageFilter.getConvolutionMatricesMap();
+                String value= (String)((JComboBox)e.getSource()).getSelectedItem();
+                Double[][] matrix = convolutionMatrices.get(value);
+                if ( formattedTextFields == null || formattedTextFields.length != matrix.length || formattedTextFields[0].length != matrix[0].length){
+                    System.out.println("In if ");
+                    formattedTextFields= new JFormattedTextField[matrix.length][matrix[0].length];
+                    JPanel convolutionMatrixPanel = convolutionMatrixPanel(matrix.length, matrix[0].length);
+                    matrixPanel.remove(2);
+                    matrixPanel.add(convolutionMatrixPanel, 2);
+                    matrixPanel.revalidate();
+                    matrixPanel.repaint();
+                }
+                for ( int i = 0; i < matrix.length; i++){
+                    for ( int j=0; j < matrix[0].length; j++){
+                        formattedTextFields[i][j].setValue(matrix[i][j]);
+                    }
+                }
+            }
+        });
+    }
+
+    private  void resetConvolutionMatrix(){
+   }
 }

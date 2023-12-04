@@ -5,6 +5,7 @@ import java.awt.image.ImageFilter;
 import java.io.*;
 import java.util.HashMap;
 import java.util.Hashtable;
+import java.util.LinkedHashMap;
 import java.util.StringTokenizer;
 
 public class ConvolutionImageFilter extends ImageFilter {
@@ -13,6 +14,7 @@ public class ConvolutionImageFilter extends ImageFilter {
     double[][] cm;
     int size;
     ColorModel model;
+    public static String IDENTITY_MATRIX_NAME = "Identity";
     private static String filePath = "resources/convolutionMatrixData.txt";
     private static String exitMessage = "Create this file using the given below format: \n" +
             "N: First line contains a number representing convolution matrices in the file.\n" +
@@ -23,7 +25,8 @@ public class ConvolutionImageFilter extends ImageFilter {
     private static HashMap<String, Double[][]> convolutionMatricesMap;
 
     static {
-        convolutionMatricesMap = new HashMap<>();
+        convolutionMatricesMap = new LinkedHashMap<>();
+        LinkedHashMap<String, Double[][]> linkedHashMap = new LinkedHashMap<>();
         System.out.println("Static block invoked");
         File file = new File(filePath);
         if (!file.exists()) {
@@ -39,19 +42,33 @@ public class ConvolutionImageFilter extends ImageFilter {
                 String matrixName = br.readLine();
                 stringTokenizer = null;
                 int rows = Integer.parseInt(getNextToken(br)), cols = Integer.parseInt(getNextToken(br));
+                if ( rows == 0 || cols == 0){
+                    System.out.println("rows and cols of any matrix can't be null");
+                    System.exit(-1);
+                }
                 Double[][] matrix = new Double[rows][cols];
                 for (int i = 0; i < rows; i++) {
                     for (int j = 0; j < cols; j++) {
                         matrix[i][j] = Double.parseDouble(getNextToken(br));
                     }
                 }
-                convolutionMatricesMap.put(matrixName, matrix);
+                linkedHashMap.put(matrixName, matrix);
             }
         } catch (FileNotFoundException e) {
             throw new RuntimeException(e);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
+
+        if ( !linkedHashMap.containsKey(IDENTITY_MATRIX_NAME)){
+            Double[][] matrix = new Double[][]{ {0.0, 0.0, 0.0}, { 0.0, 1.0, 0.0}, {0.0, 0.0, 0.0}};
+            convolutionMatricesMap.put(IDENTITY_MATRIX_NAME, matrix);
+        }
+        convolutionMatricesMap.putAll(linkedHashMap);
+    }
+
+    public static HashMap<String, Double[][]> getConvolutionMatricesMap() {
+        return convolutionMatricesMap;
     }
 
     private static StringTokenizer stringTokenizer = null;
