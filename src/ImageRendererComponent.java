@@ -4,17 +4,29 @@ import java.awt.image.FilteredImageSource;
 
 public class ImageRendererComponent extends JComponent {
     Image image;
+    ImageIcon icon;
     MediaTracker tracker;
     ConvolutionImageObserver observer ;
     ConvolutionImageFilter filter ;
-    public ImageRendererComponent(Image image , ConvolutionImageFilter filter){
-        double[][] mat = { {-1,-1,-1}, {-1,8,-1} , {-1,-1,-1}};
+    public ImageRendererComponent(ImageIcon icon , ConvolutionImageFilter filter){
+        this.icon = icon;
         this.filter  = filter;
+        this.image = icon.getImage();
         FilteredImageSource fis  = new FilteredImageSource(image.getSource(), filter);
         this.image = createImage(fis);
         tracker = new MediaTracker(this);
         tracker.addImage(this.image,1);
         observer = new ConvolutionImageObserver(this);
+    }
+
+    public void setFilter(ConvolutionImageFilter filter) {
+        this.filter = filter;
+        FilteredImageSource fis  = new FilteredImageSource(this.icon.getImage().getSource(), filter);
+        tracker.removeImage(this.image);
+        this.image = createImage(fis);
+        tracker.addImage(this.image,1);
+        this.revalidate();
+        this.repaint();
     }
 
     @Override

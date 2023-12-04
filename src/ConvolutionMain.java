@@ -24,33 +24,35 @@ public class ConvolutionMain extends JFrame {
     private JPanel convolutionMatrixPanel ;
     private JFormattedTextField[][] formattedTextFields;
     private JPanel matrixPanel;
-
+    private ImageIcon icon;
+    JPanel contentPanel ;
+    ImageRendererComponent imageRendererComponent;
     public static void main(String[] args) {
         ConvolutionMain frame= new ConvolutionMain();
         frame.setExtendedState(JFrame.MAXIMIZED_BOTH);
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        JPanel panel = new JPanel();
-        panel.setLayout(new GridBagLayout());
+        frame.contentPanel = new JPanel();
+        frame.contentPanel.setLayout(new GridBagLayout());
         GridBagConstraints constraints = new GridBagConstraints();
         constraints.weightx = 0.7;
         constraints.gridx = 0;
         constraints.gridy =0;
         ImageIcon defaultIcon = new ImageIcon("images/jiraya.png");
+        frame.icon = defaultIcon;
         ConvolutionImageFilter filter = new ConvolutionImageFilter(ConvolutionImageFilter.getConvolutionMatricesMap().get(ConvolutionImageFilter.IDENTITY_MATRIX_NAME));
-        ImageRendererComponent comp = new ImageRendererComponent(defaultIcon.getImage(),filter);
-        comp.setSize(1000, 600);
-        comp.setMinimumSize(new Dimension(defaultIcon.getIconWidth(), defaultIcon.getIconHeight()));
-        comp.setPreferredSize(new Dimension(defaultIcon.getIconWidth(), defaultIcon.getIconHeight()));
-        comp.setMaximumSize(new Dimension(defaultIcon.getIconWidth(), defaultIcon.getIconHeight()));
-        comp.setLocation(0,0);
-        comp.setBorder(BorderFactory.createLineBorder(Color.BLACK));
-        panel.add(comp, constraints);
+        frame.imageRendererComponent = new ImageRendererComponent(frame.icon,filter);
+        frame.imageRendererComponent.setMinimumSize(new Dimension(defaultIcon.getIconWidth(), defaultIcon.getIconHeight()));
+        frame.imageRendererComponent.setPreferredSize(new Dimension(defaultIcon.getIconWidth(), defaultIcon.getIconHeight()));
+        frame.imageRendererComponent.setMaximumSize(new Dimension(defaultIcon.getIconWidth(), defaultIcon.getIconHeight()));
+        frame.imageRendererComponent.setLocation(0,0);
+        frame.imageRendererComponent.setBorder(BorderFactory.createLineBorder(Color.BLACK));
+        frame.contentPanel.add(frame.imageRendererComponent, constraints);
         constraints.weightx = 0.3;
         constraints.gridx = 1;
         JPanel menuPanel = frame.createMenuPanel();
         frame.setValuesForFormattedTextFields();
-        panel.add(menuPanel, constraints);
-        frame.setContentPane(panel);
+        frame.contentPanel.add(menuPanel, constraints);
+        frame.setContentPane(frame.contentPanel);
         frame.addActions();
         frame.setVisible(true);
     }
@@ -133,6 +135,7 @@ public class ConvolutionMain extends JFrame {
         decimalFormat.setMinimumFractionDigits(1);
         decimalFormat.setGroupingUsed(false); // disabling group (e.g thousands)
         NumberFormatter numberFormatter = new NumberFormatter(decimalFormat);
+        numberFormatter.setValueClass(Double.class);
         DefaultFormatterFactory defaultFormatterFactory = new DefaultFormatterFactory(numberFormatter);
         for (int i = 0; i < rows; i++) {
             constraints.gridy = 2 * i;
@@ -217,6 +220,27 @@ public class ConvolutionMain extends JFrame {
                 setValuesForFormattedTextFields();
             }
         });
+
+        submitButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                System.out.println("Action Event : " + " on submitButton click");
+                int rows = formattedTextFields.length, cols = formattedTextFields[0].length;
+                Double[][] matrix = new Double[rows][cols];
+                for ( int i=0; i< rows; i++){
+                    for ( int j =0; j < cols; j++){
+                        matrix[i][j] = (Double)formattedTextFields[i][j].getValue();
+                    }
+                }
+                ConvolutionImageFilter convolutionImageFilter = new ConvolutionImageFilter(matrix);
+                imageRendererComponent.setFilter(convolutionImageFilter);
+                imageRendererComponent.setMinimumSize(new Dimension(icon.getIconWidth(), icon.getIconHeight()));
+                imageRendererComponent.setPreferredSize(new Dimension(icon.getIconWidth(), icon.getIconHeight()));
+                imageRendererComponent.setMaximumSize(new Dimension(icon.getIconWidth(), icon.getIconHeight()));
+                revalidate();
+                repaint();
+            }
+        });
     }
 
     private void setValuesForFormattedTextFields(){
@@ -228,4 +252,5 @@ public class ConvolutionMain extends JFrame {
             }
         }
    }
+
 }
