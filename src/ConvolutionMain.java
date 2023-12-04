@@ -224,7 +224,6 @@ public class ConvolutionMain extends JFrame {
         submitButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                System.out.println("Action Event : " + " on submitButton click");
                 int rows = formattedTextFields.length, cols = formattedTextFields[0].length;
                 Double[][] matrix = new Double[rows][cols];
                 for ( int i=0; i< rows; i++){
@@ -239,6 +238,13 @@ public class ConvolutionMain extends JFrame {
                 imageRendererComponent.setMaximumSize(new Dimension(icon.getIconWidth(), icon.getIconHeight()));
                 revalidate();
                 repaint();
+            }
+        });
+
+        resetButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                setValuesForFormattedTextFields();
             }
         });
     }
