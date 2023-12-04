@@ -93,7 +93,7 @@ public class ConvolutionImageFilter extends ImageFilter {
             {1, 2, 3, 4, 5, -5, -4, -3, -2, -1}
     };
 
-    public ConvolutionImageFilter(double[][] mat) {
+    public ConvolutionImageFilter(Double[][] mat) {
         size = mat.length;
         if ((size % 2) == 0)
             cm = new double[size + 1][size + 1];
