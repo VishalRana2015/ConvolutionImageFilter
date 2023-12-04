@@ -15,12 +15,11 @@ public class ImageRendererComponent extends JComponent {
         tracker = new MediaTracker(this);
         tracker.addImage(this.image,1);
         observer = new ConvolutionImageObserver(this);
-        //prepareImage(this.image , new ConvolutionImageObserver(this));
     }
 
     @Override
     protected void paintComponent(Graphics g) {
-        //    super.paintComponent(g);
+        super.paintComponent(g);
         int x, y , w, h;
         x = (int)g.getClipBounds().getX();
         y = (int)g.getClipBounds().getY();

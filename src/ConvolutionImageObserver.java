@@ -8,7 +8,6 @@ public class ConvolutionImageObserver implements ImageObserver {
     }
     @Override
     public boolean imageUpdate(Image img, int infoflags, int x, int y, int width, int height) {
-        // System.out.println("imageUpdate called x,y,w,h: "+ x+ ", "+ y + ", "+ width + ", "+ height);
         String s  = "";
         if ( (infoflags &ImageObserver.ALLBITS) != 0) {
             s = s + "Done";
@@ -28,8 +27,6 @@ public class ConvolutionImageObserver implements ImageObserver {
             s = s+ "Width";
         if ( (infoflags & ImageObserver.SOMEBITS ) != 0)
             s = s+ "SomeBits";
-        // System.out.println("s :"+ s);
-        //comp.repaint();
         return true;
     }
 }
