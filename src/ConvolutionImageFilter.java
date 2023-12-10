@@ -27,7 +27,6 @@ public class ConvolutionImageFilter extends ImageFilter {
     static {
         convolutionMatricesMap = new LinkedHashMap<>();
         LinkedHashMap<String, Double[][]> linkedHashMap = new LinkedHashMap<>();
-        System.out.println("Static block invoked");
         File file = new File(filePath);
         if (!file.exists()) {
             // exit the program
@@ -117,7 +116,6 @@ public class ConvolutionImageFilter extends ImageFilter {
             s = s + "CompleteScanLines";
         if ((hints & ImageConsumer.RANDOMPIXELORDER) != 0)
             s = s + "RandomPixelOrder";
-        System.out.println("hints by ImageProducer :" + s);
         consumer.setHints(ImageConsumer.COMPLETESCANLINES | ImageConsumer.SINGLEPASS | ImageConsumer.SINGLEFRAME | ImageConsumer.TOPDOWNLEFTRIGHT);
     }
 
@@ -153,7 +151,6 @@ public class ConvolutionImageFilter extends ImageFilter {
 
     @Override
     public void imageComplete(int status) {
-        System.out.println("ImageComplete called");
         int[] temp = new int[savedWidth];
         double[][] rm = new double[size][size];
         double[][] gm = new double[size][size];

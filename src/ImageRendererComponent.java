@@ -2,7 +2,7 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.image.FilteredImageSource;
 
-public class ImageRendererComponent extends JPanel {
+public class ImageRendererComponent extends JComponent implements Scrollable{
     Image image;
     ImageIcon icon;
     MediaTracker tracker;
@@ -36,7 +36,6 @@ public class ImageRendererComponent extends JPanel {
 
     public void setSizeToImage(){
         Dimension dimension = new Dimension(this.icon.getIconWidth(), this.icon.getIconHeight());
-        System.out.println("Dimension : "+ dimension);
         this.setMinimumSize(dimension);
         this.setPreferredSize(dimension);
         this.setMaximumSize(dimension);
@@ -52,8 +51,11 @@ public class ImageRendererComponent extends JPanel {
         h = this.getHeight()  - (this.getInsets().top + this.getInsets().bottom);
         Graphics2D gg = (Graphics2D)g.create();
         //if ( tracker.statusID(1,false) == MediaTracker.COMPLETE)
-        if ( image != null)
-            gg.drawImage(image, x,y, w, h, observer);
+        if ( image != null) {
+            int dw = (int)Math.min(g.getClipBounds().getWidth(), image.getWidth(null));
+            int dh = (int)Math.min(g.getClipBounds().getHeight(), image.getHeight(null));
+            gg.drawImage(image,x,y, x+dw, y+dh, x,y,x+dw,y+dh,observer);
+        }
         else{
             int mx, my ;
             mx = x + w/2;
@@ -62,6 +64,31 @@ public class ImageRendererComponent extends JPanel {
             gg.drawString("Image is null for now ", mx,my);
         }
         gg.dispose();
+    }
+
+    @Override
+    public Dimension getPreferredScrollableViewportSize() {
+        return this.getSize();
+    }
+
+    @Override
+    public int getScrollableUnitIncrement(Rectangle visibleRect, int orientation, int direction) {
+        return 10;
+    }
+
+    @Override
+    public int getScrollableBlockIncrement(Rectangle visibleRect, int orientation, int direction) {
+        return 10;
+    }
+
+    @Override
+    public boolean getScrollableTracksViewportWidth() {
+        return getPreferredSize().width < getParent().getWidth();
+    }
+
+    @Override
+    public boolean getScrollableTracksViewportHeight() {
+        return getPreferredSize().height < getParent().getHeight();
     }
 
 }

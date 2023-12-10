@@ -1,11 +1,10 @@
+import com.sun.xml.internal.ws.addressing.WsaActionUtil;
+
 import javax.swing.*;
 import javax.swing.filechooser.FileNameExtensionFilter;
 import javax.swing.text.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.text.DecimalFormat;
 import java.util.HashMap;
@@ -39,6 +38,7 @@ public class ConvolutionMain extends JFrame {
         frame.contentPanel.setLayout(new GridBagLayout());
         GridBagConstraints constraints = new GridBagConstraints();
         constraints.weightx = 0.7;
+        constraints.weighty = 1;
         constraints.gridx = 0;
         constraints.gridy = 0;
         ImageIcon defaultIcon = new ImageIcon("images/jiraya.png");
@@ -47,8 +47,8 @@ public class ConvolutionMain extends JFrame {
         frame.imageRendererComponent = new ImageRendererComponent(frame.icon, filter);
         frame.imageRendererComponent.setBorder(BorderFactory.createLineBorder(Color.BLACK));
         JScrollPane scrollPane = new JScrollPane(frame.imageRendererComponent);
-        scrollPane.setPreferredSize(new Dimension(1000,700));
         constraints.fill = GridBagConstraints.BOTH;
+        frame.contentPanel.setBackground(Color.PINK);
         frame.contentPanel.add(scrollPane, constraints);
         constraints.weightx = 0.3;
         constraints.gridx = 1;
@@ -86,7 +86,6 @@ public class ConvolutionMain extends JFrame {
             }
             index++;
         }
-        System.out.println(identityMatrixIndex);
         if (identityMatrixIndex != -1) {
             convolutionComboBox.setSelectedIndex(identityMatrixIndex);
         }
@@ -101,31 +100,42 @@ public class ConvolutionMain extends JFrame {
         menuPanel.add(convolutionPanel);
         convolutionPanel.setBackground(Color.PINK);
         menuPanel.add(Box.createVerticalStrut(VERTICAL_STRUT_HEIGHT));
-        JSeparator separator2 = new JSeparator(JSeparator.HORIZONTAL);
-        menuPanel.add(separator2);
+        menuPanel.add(createSeparator());
         menuPanel.add(Box.createVerticalStrut(VERTICAL_STRUT_HEIGHT));
 
         // -----------------------------------------------------------
         matrixPanel = matrixPanel();
+
+        matrixPanel.setBorder(BorderFactory.createLineBorder(Color.BLACK));
         menuPanel.add(matrixPanel);
-        matrixPanel.add(Box.createVerticalStrut(STRUCT_HEIGHT));
-        menuPanel.add(getSeparator());
+        menuPanel.add(Box.createVerticalStrut(STRUCT_HEIGHT));
+        menuPanel.add(createSeparator());
         menuPanel.add(Box.createVerticalStrut(STRUCT_HEIGHT));
         //------------------------------------------------------------------------
+
+//        loadImageButton = new JButton("<html>Load Image</html>");
+//        menuPanel.add(loadImageButton);
+//         menuPanel.add(Box.createVerticalStrut(STRUCT_HEIGHT));
+//        menuPanel.add(createSeparator());
+//        menuPanel.add(Box.createVerticalGlue());
         JPanel buttonPanel = getButtonPanel();
-
-        Dimension dimension = buttonPanel.getMinimumSize();
-
-        System.out.println(dimension);
         menuPanel.add(buttonPanel);
         menuPanel.add(Box.createVerticalStrut(STRUCT_HEIGHT));
-        menuPanel.add(getSeparator());
+        menuPanel.add(createSeparator());
         menuPanel.add(Box.createVerticalGlue());
+////        menuPanel.add(Box.createVerticalGlue());
+////        menuPanel.add(Box.createVerticalGlue());
+////        menuPanel.add(Box.createVerticalGlue());
+////        menuPanel.add(Box.createVerticalGlue());
+////        menuPanel.add(Box.createVerticalGlue());
+
         return menuPanel;
     }
 
-    private static JSeparator getSeparator() {
-        return new JSeparator(JSeparator.HORIZONTAL);
+    private static JSeparator createSeparator() {
+        JSeparator separator = new JSeparator(JSeparator.HORIZONTAL);
+        separator.setMaximumSize(new Dimension((int)separator.getMaximumSize().getWidth(), (int)separator.getPreferredSize().getWidth()));
+        return separator;
     }
 
     private JPanel convolutionMatrixPanel(int rows, int cols) {
@@ -196,12 +206,14 @@ public class ConvolutionMain extends JFrame {
         GridBagConstraints constraints = new GridBagConstraints();
         loadImageButton = new JButton("<html>Load<br/>Image</html>");
         saveImageButton = new JButton("<html>Save<br/>Image</html>");
+        constraints.weighty = constraints.weightx = 1;
         constraints.gridx = 0;
         constraints.gridy = 0;
         constraints.anchor = GridBagConstraints.CENTER;
         buttonPanel.add(loadImageButton, constraints);
         constraints.gridx = 1;
-        buttonPanel.add(saveImageButton, constraints);
+        buttonPanel.setMaximumSize(buttonPanel.getPreferredSize());
+       // buttonPanel.add(saveImageButton, constraints);
         return buttonPanel;
     }
 
