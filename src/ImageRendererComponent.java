@@ -2,20 +2,16 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.image.FilteredImageSource;
 
-public class ImageRendererComponent extends JComponent {
+public class ImageRendererComponent extends JPanel {
     Image image;
     ImageIcon icon;
     MediaTracker tracker;
     ConvolutionImageObserver observer ;
     ConvolutionImageFilter filter ;
-    public ImageRendererComponent(ImageIcon icon , ConvolutionImageFilter filter){
+    public ImageRendererComponent(ImageIcon icon , ConvolutionImageFilter convolutionImageFilter){
         this.icon = icon;
-        this.filter  = filter;
-        this.image = icon.getImage();
-        FilteredImageSource fis  = new FilteredImageSource(image.getSource(), filter);
-        this.image = createImage(fis);
-        tracker = new MediaTracker(this);
-        tracker.addImage(this.image,1);
+        this.tracker = new MediaTracker(this);
+        this.setFilter(convolutionImageFilter);
         observer = new ConvolutionImageObserver(this);
     }
 
@@ -25,8 +21,25 @@ public class ImageRendererComponent extends JComponent {
         tracker.removeImage(this.image);
         this.image = createImage(fis);
         tracker.addImage(this.image,1);
+        setSizeToImage();
         this.revalidate();
         this.repaint();
+    }
+
+    public void setIcon(ImageIcon icon) {
+        this.icon = icon;
+        this.setFilter(this.filter);
+        setSizeToImage();
+        this.revalidate();
+        this.repaint();
+    }
+
+    public void setSizeToImage(){
+        Dimension dimension = new Dimension(this.icon.getIconWidth(), this.icon.getIconHeight());
+        System.out.println("Dimension : "+ dimension);
+        this.setMinimumSize(dimension);
+        this.setPreferredSize(dimension);
+        this.setMaximumSize(dimension);
     }
 
     @Override

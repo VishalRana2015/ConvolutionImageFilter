@@ -1,10 +1,12 @@
 import javax.swing.*;
+import javax.swing.filechooser.FileNameExtensionFilter;
 import javax.swing.text.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.io.File;
 import java.text.DecimalFormat;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -21,14 +23,16 @@ public class ConvolutionMain extends JFrame {
     private int VERTICAL_STRUT_HEIGHT = 5;
     private int MATRIX_SIZE = 3;
     private int MATRIX_CELL_SPACING_WIDTH = 3;
-    private JPanel convolutionMatrixPanel ;
+    private JPanel convolutionMatrixPanel;
     private JFormattedTextField[][] formattedTextFields;
     private JPanel matrixPanel;
     private ImageIcon icon;
-    JPanel contentPanel ;
+    JPanel contentPanel;
     ImageRendererComponent imageRendererComponent;
+    private static ConvolutionMain frame;
+
     public static void main(String[] args) {
-        ConvolutionMain frame= new ConvolutionMain();
+        frame = new ConvolutionMain();
         frame.setExtendedState(JFrame.MAXIMIZED_BOTH);
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.contentPanel = new JPanel();
@@ -36,17 +40,16 @@ public class ConvolutionMain extends JFrame {
         GridBagConstraints constraints = new GridBagConstraints();
         constraints.weightx = 0.7;
         constraints.gridx = 0;
-        constraints.gridy =0;
+        constraints.gridy = 0;
         ImageIcon defaultIcon = new ImageIcon("images/jiraya.png");
         frame.icon = defaultIcon;
         ConvolutionImageFilter filter = new ConvolutionImageFilter(ConvolutionImageFilter.getConvolutionMatricesMap().get(ConvolutionImageFilter.IDENTITY_MATRIX_NAME));
-        frame.imageRendererComponent = new ImageRendererComponent(frame.icon,filter);
-        frame.imageRendererComponent.setMinimumSize(new Dimension(defaultIcon.getIconWidth(), defaultIcon.getIconHeight()));
-        frame.imageRendererComponent.setPreferredSize(new Dimension(defaultIcon.getIconWidth(), defaultIcon.getIconHeight()));
-        frame.imageRendererComponent.setMaximumSize(new Dimension(defaultIcon.getIconWidth(), defaultIcon.getIconHeight()));
-        frame.imageRendererComponent.setLocation(0,0);
+        frame.imageRendererComponent = new ImageRendererComponent(frame.icon, filter);
         frame.imageRendererComponent.setBorder(BorderFactory.createLineBorder(Color.BLACK));
-        frame.contentPanel.add(frame.imageRendererComponent, constraints);
+        JScrollPane scrollPane = new JScrollPane(frame.imageRendererComponent);
+        scrollPane.setPreferredSize(new Dimension(1000,700));
+        constraints.fill = GridBagConstraints.BOTH;
+        frame.contentPanel.add(scrollPane, constraints);
         constraints.weightx = 0.3;
         constraints.gridx = 1;
         JPanel menuPanel = frame.createMenuPanel();
@@ -75,16 +78,16 @@ public class ConvolutionMain extends JFrame {
         convolutionComboBox = new JComboBox<>();
         Iterator<String> iterator = ConvolutionImageFilter.getConvolutionMatricesMap().keySet().iterator();
         int index = 0;
-        while ( iterator.hasNext()){
+        while (iterator.hasNext()) {
             String key = iterator.next();
             convolutionComboBox.addItem(key);
-            if ( key.equals("Identity")){
+            if (key.equals("Identity")) {
                 identityMatrixIndex = index;
             }
             index++;
         }
         System.out.println(identityMatrixIndex);
-        if ( identityMatrixIndex != -1){
+        if (identityMatrixIndex != -1) {
             convolutionComboBox.setSelectedIndex(identityMatrixIndex);
         }
 
@@ -202,15 +205,13 @@ public class ConvolutionMain extends JFrame {
         return buttonPanel;
     }
 
-    private void addActions(){
-        convolutionComboBox.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
+    private void addActions() {
+        convolutionComboBox.addActionListener((ActionEvent e) -> {
                 HashMap<String, Double[][]> convolutionMatrices = ConvolutionImageFilter.getConvolutionMatricesMap();
-                String value= (String)((JComboBox)e.getSource()).getSelectedItem();
+                String value = (String) ((JComboBox) e.getSource()).getSelectedItem();
                 Double[][] matrix = convolutionMatrices.get(value);
-                if ( formattedTextFields == null || formattedTextFields.length != matrix.length || formattedTextFields[0].length != matrix[0].length){
-                    formattedTextFields= new JFormattedTextField[matrix.length][matrix[0].length];
+                if (formattedTextFields == null || formattedTextFields.length != matrix.length || formattedTextFields[0].length != matrix[0].length) {
+                    formattedTextFields = new JFormattedTextField[matrix.length][matrix[0].length];
                     JPanel convolutionMatrixPanel = convolutionMatrixPanel(matrix.length, matrix[0].length);
                     matrixPanel.remove(2);
                     matrixPanel.add(convolutionMatrixPanel, 2);
@@ -218,45 +219,48 @@ public class ConvolutionMain extends JFrame {
                     matrixPanel.repaint();
                 }
                 setValuesForFormattedTextFields();
-            }
-        });
+            });
 
-        submitButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
+        submitButton.addActionListener((ActionEvent e) -> {
                 int rows = formattedTextFields.length, cols = formattedTextFields[0].length;
                 Double[][] matrix = new Double[rows][cols];
-                for ( int i=0; i< rows; i++){
-                    for ( int j =0; j < cols; j++){
-                        matrix[i][j] = (Double)formattedTextFields[i][j].getValue();
+                for (int i = 0; i < rows; i++) {
+                    for (int j = 0; j < cols; j++) {
+                        matrix[i][j] = (Double) formattedTextFields[i][j].getValue();
                     }
                 }
                 ConvolutionImageFilter convolutionImageFilter = new ConvolutionImageFilter(matrix);
                 imageRendererComponent.setFilter(convolutionImageFilter);
-                imageRendererComponent.setMinimumSize(new Dimension(icon.getIconWidth(), icon.getIconHeight()));
-                imageRendererComponent.setPreferredSize(new Dimension(icon.getIconWidth(), icon.getIconHeight()));
-                imageRendererComponent.setMaximumSize(new Dimension(icon.getIconWidth(), icon.getIconHeight()));
                 revalidate();
                 repaint();
-            }
-        });
+            });
 
-        resetButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
+        resetButton.addActionListener((ActionEvent e ) -> {
                 setValuesForFormattedTextFields();
-            }
-        });
+            });
+
+        loadImageButton.addActionListener((ActionEvent e) -> {
+                JFileChooser fileChooser = new JFileChooser();
+                FileNameExtensionFilter fileNameExtensionFilter = new FileNameExtensionFilter("Image", "jpeg", "jpg", "png");
+                fileChooser.setFileFilter(fileNameExtensionFilter);
+                int result = fileChooser.showOpenDialog(frame);
+                if (result != JFileChooser.APPROVE_OPTION) {
+                    return;
+                }
+                File file = fileChooser.getSelectedFile();
+                ImageIcon icon = new ImageIcon(file.getAbsolutePath());
+                imageRendererComponent.setIcon(icon);
+            });
     }
 
-    private void setValuesForFormattedTextFields(){
-        String selectedMatrixName = (String)convolutionComboBox.getSelectedItem();
+    private void setValuesForFormattedTextFields() {
+        String selectedMatrixName = (String) convolutionComboBox.getSelectedItem();
         Double[][] matrix = ConvolutionImageFilter.getConvolutionMatricesMap().get(selectedMatrixName);
-        for ( int i = 0; i < matrix.length; i++){
-            for ( int j=0; j < matrix[0].length; j++){
+        for (int i = 0; i < matrix.length; i++) {
+            for (int j = 0; j < matrix[0].length; j++) {
                 formattedTextFields[i][j].setValue(matrix[i][j]);
             }
         }
-   }
+    }
 
 }

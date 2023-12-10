@@ -80,19 +80,6 @@ public class ConvolutionImageFilter extends ImageFilter {
         return stringTokenizer.nextToken();
     }
 
-    public static double[][] sobelMatrix = {
-            {-1, -2, -3, -4, -5, 5, 4, 3, 2, 1},
-            {-1, -2, -3, -4, -5, 5, 4, 3, 2, 1},
-            {-1, -2, -3, -4, -5, 5, 4, 3, 2, 1},
-            {-1, -2, -3, -4, -5, 5, 4, 3, 2, 1},
-            {-1, -2, -3, -4, -5, 5, 4, 3, 2, 1},
-            {-1, -2, -3, -4, -5, 5, 4, 3, 2, 1},
-            {-1, -2, -3, -4, -5, 5, 4, 3, 2, 1},
-            {-1, -2, -3, -4, -5, 5, 4, 3, 2, 1},
-            {-1, -2, -3, -4, -5, 5, 4, 3, 2, 1},
-            {1, 2, 3, 4, 5, -5, -4, -3, -2, -1}
-    };
-
     public ConvolutionImageFilter(Double[][] mat) {
         size = mat.length;
         if ((size % 2) == 0)
