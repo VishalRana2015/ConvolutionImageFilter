@@ -134,7 +134,7 @@ public class ConvolutionMain extends JFrame {
 
     private static JSeparator createSeparator() {
         JSeparator separator = new JSeparator(JSeparator.HORIZONTAL);
-        separator.setMaximumSize(new Dimension((int)separator.getMaximumSize().getWidth(), (int)separator.getPreferredSize().getWidth()));
+        separator.setMaximumSize(new Dimension((int)separator.getMaximumSize().getWidth(), (int)separator.getPreferredSize().getHeight()));
         return separator;
     }
 
