@@ -66,6 +66,10 @@ public class ImageRendererComponent extends JComponent implements Scrollable{
         gg.dispose();
     }
 
+    public Image getImage() {
+        return image;
+    }
+
     @Override
     public Dimension getPreferredScrollableViewportSize() {
         return this.getSize();

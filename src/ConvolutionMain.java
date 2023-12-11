@@ -1,10 +1,16 @@
 
+import javax.imageio.ImageIO;
 import javax.swing.*;
 import javax.swing.filechooser.FileNameExtensionFilter;
 import javax.swing.text.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
+import java.awt.image.BufferedImage;
+import java.awt.image.MemoryImageSource;
+import java.awt.image.RenderedImage;
 import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.text.DecimalFormat;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -133,7 +139,7 @@ public class ConvolutionMain extends JFrame {
 
     private static JSeparator createSeparator() {
         JSeparator separator = new JSeparator(JSeparator.HORIZONTAL);
-        separator.setMaximumSize(new Dimension((int)separator.getMaximumSize().getWidth(), (int)separator.getPreferredSize().getHeight()));
+        separator.setMaximumSize(new Dimension((int) separator.getMaximumSize().getWidth(), (int) separator.getPreferredSize().getHeight()));
         return separator;
     }
 
@@ -211,57 +217,93 @@ public class ConvolutionMain extends JFrame {
         constraints.anchor = GridBagConstraints.CENTER;
         buttonPanel.add(loadImageButton, constraints);
         constraints.gridx = 1;
-        buttonPanel.setMaximumSize(buttonPanel.getPreferredSize());
-       // buttonPanel.add(saveImageButton, constraints);
+        buttonPanel.setMaximumSize(new Dimension(300, (int) buttonPanel.getPreferredSize().getHeight()));
+        buttonPanel.add(saveImageButton, constraints);
         return buttonPanel;
     }
 
     private void addActions() {
         convolutionComboBox.addActionListener((ActionEvent e) -> {
-                HashMap<String, Double[][]> convolutionMatrices = ConvolutionImageFilter.getConvolutionMatricesMap();
-                String value = (String) ((JComboBox) e.getSource()).getSelectedItem();
-                Double[][] matrix = convolutionMatrices.get(value);
-                if (formattedTextFields == null || formattedTextFields.length != matrix.length || formattedTextFields[0].length != matrix[0].length) {
-                    formattedTextFields = new JFormattedTextField[matrix.length][matrix[0].length];
-                    JPanel convolutionMatrixPanel = convolutionMatrixPanel(matrix.length, matrix[0].length);
-                    matrixPanel.remove(2);
-                    matrixPanel.add(convolutionMatrixPanel, 2);
-                    matrixPanel.revalidate();
-                    matrixPanel.repaint();
-                }
-                setValuesForFormattedTextFields();
-            });
+            HashMap<String, Double[][]> convolutionMatrices = ConvolutionImageFilter.getConvolutionMatricesMap();
+            String value = (String) ((JComboBox) e.getSource()).getSelectedItem();
+            Double[][] matrix = convolutionMatrices.get(value);
+            if (formattedTextFields == null || formattedTextFields.length != matrix.length || formattedTextFields[0].length != matrix[0].length) {
+                formattedTextFields = new JFormattedTextField[matrix.length][matrix[0].length];
+                JPanel convolutionMatrixPanel = convolutionMatrixPanel(matrix.length, matrix[0].length);
+                matrixPanel.remove(2);
+                matrixPanel.add(convolutionMatrixPanel, 2);
+                matrixPanel.revalidate();
+                matrixPanel.repaint();
+            }
+            setValuesForFormattedTextFields();
+        });
 
         submitButton.addActionListener((ActionEvent e) -> {
-                int rows = formattedTextFields.length, cols = formattedTextFields[0].length;
-                Double[][] matrix = new Double[rows][cols];
-                for (int i = 0; i < rows; i++) {
-                    for (int j = 0; j < cols; j++) {
-                        matrix[i][j] = (Double) formattedTextFields[i][j].getValue();
-                    }
+            int rows = formattedTextFields.length, cols = formattedTextFields[0].length;
+            Double[][] matrix = new Double[rows][cols];
+            for (int i = 0; i < rows; i++) {
+                for (int j = 0; j < cols; j++) {
+                    matrix[i][j] = (Double) formattedTextFields[i][j].getValue();
                 }
-                ConvolutionImageFilter convolutionImageFilter = new ConvolutionImageFilter(matrix);
-                imageRendererComponent.setFilter(convolutionImageFilter);
-                revalidate();
-                repaint();
-            });
+            }
+            ConvolutionImageFilter convolutionImageFilter = new ConvolutionImageFilter(matrix);
+            imageRendererComponent.setFilter(convolutionImageFilter);
+            revalidate();
+            repaint();
+        });
 
-        resetButton.addActionListener((ActionEvent e ) -> {
-                setValuesForFormattedTextFields();
-            });
+        resetButton.addActionListener((ActionEvent e) -> {
+            setValuesForFormattedTextFields();
+        });
 
+        JFileChooser fileChooser = new JFileChooser();
+        FileNameExtensionFilter fileNameExtensionFilter = new FileNameExtensionFilter("Image", "jpeg", "jpg", "png");
+        fileChooser.setFileFilter(fileNameExtensionFilter);
         loadImageButton.addActionListener((ActionEvent e) -> {
-                JFileChooser fileChooser = new JFileChooser();
-                FileNameExtensionFilter fileNameExtensionFilter = new FileNameExtensionFilter("Image", "jpeg", "jpg", "png");
-                fileChooser.setFileFilter(fileNameExtensionFilter);
-                int result = fileChooser.showOpenDialog(frame);
-                if (result != JFileChooser.APPROVE_OPTION) {
-                    return;
+            int result = fileChooser.showOpenDialog(frame);
+            if (result != JFileChooser.APPROVE_OPTION) {
+                return;
+            }
+            File file = fileChooser.getSelectedFile();
+            ImageIcon icon = new ImageIcon(file.getAbsolutePath());
+            imageRendererComponent.setIcon(icon);
+        });
+
+        saveImageButton.addActionListener((ActionEvent e) -> {
+            int result = fileChooser.showSaveDialog(frame);
+            if (result != JFileChooser.APPROVE_OPTION) {
+                return;
+            }
+            String filePath = fileChooser.getSelectedFile().getAbsolutePath() + ".png";
+            try {
+                File file = new File(filePath);
+                if (!file.exists()) {
+                    file.createNewFile();
                 }
-                File file = fileChooser.getSelectedFile();
-                ImageIcon icon = new ImageIcon(file.getAbsolutePath());
-                imageRendererComponent.setIcon(icon);
-            });
+                saveImageToFile(imageRendererComponent.getImage(), file);
+            } catch (Exception exp) {
+                System.out.println("Exception caught: " + exp.getMessage());
+                exp.getStackTrace();
+            }
+        });
+    }
+
+    private void saveImageToFile(Image image, File file) {
+        try {
+            FileOutputStream fileOutputStream = new FileOutputStream(file);
+            BufferedImage bufferedImage = new BufferedImage(image.getWidth(null), image.getHeight(null), BufferedImage.TYPE_4BYTE_ABGR);
+            Graphics graphics = bufferedImage.getGraphics();
+            graphics.drawImage(image, 0, 0, null);
+            ImageIO.write(bufferedImage, "png", fileOutputStream);
+
+            // Show a success message
+            JOptionPane.showMessageDialog(this, "Image saved successfully!");
+
+        } catch (IOException ex) {
+            // Handle the exception if saving fails
+            ex.printStackTrace();
+            JOptionPane.showMessageDialog(this, "Error while saving image!");
+        }
     }
 
     private void setValuesForFormattedTextFields() {
